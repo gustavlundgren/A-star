@@ -20,8 +20,8 @@ class Game{
 
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 5
-        this.rows = 5
+        this.cols = 20
+        this.rows = 20
         this.grid = new Array(this.cols)
         this.openSet = []
         this.closedSet = []
@@ -51,7 +51,7 @@ class Grid{
                 break
 
             default:
-                console.log('err start');
+                //console.log('err start');
                 break
         }
 
@@ -61,7 +61,7 @@ class Grid{
                 break 
 
             default:
-                console.log('err end');
+                //console.log('err end');
                 break
         }
 
@@ -70,16 +70,16 @@ class Grid{
 
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
-                this.grid[i][j].show()
+                this.grid[i][j].show('black', true)
             }
         }
 
         for(let i = 0; i < this.closedSet.length; i++){
-            this.closedSet[i].show('red')
+            this.closedSet[i].show('red', true)
         }
 
         for(let i = 0; i < this.openSet; i++){
-            this.openSet[i].show('green')
+            this.openSet[i].show('green', true)
         }
     }
 }
@@ -95,18 +95,26 @@ class Cell{
         this.h = 0
     }
 
-    show(col){
-        ctx.strokeStyle = col
-        ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height)
-    }
+    show(col, bool){
+        
+        this.bool;
+
+        if(this.bool){
+            ctx.fillStyle = col
+            ctx.fillRect(this.x * this.width, this.y * this.height, this.width, this.height)
+        }else{
+            ctx.strokeStyle = col
+            ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height) 
+        }
+   }
 }
 
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
-grid.update()
+
 
 function main(){
-
+    grid.update()
     requestAnimationFrame(main)
 }
 
