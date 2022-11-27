@@ -2,7 +2,7 @@ const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
 let CANVAS_WIDTH = canvas.width
-let CANVAS_HEIGHT = canvas.height
+let CANVAS_HEIGHT = canvas.height 
 
 class Game{
     constructor(){
@@ -41,11 +41,10 @@ class Grid{
                 this.grid[i][j] = new Cell(i, j, this.cellWidth, this.cellHeight)
             }
         }
-
-        console.log(this.grid);
     }
 
     update(){
+
         switch(this.start){
             case 1:
                 this.start = this.grid[0][0]
@@ -68,13 +67,10 @@ class Grid{
 
         this.openSet.push(this.start)
 
-        while(this.openSet.length > 10){
 
-        }
-
-        for(let i = 0; i < this.cols.length; i++){
+        for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
-                this.grid[i][j].show('white')
+                this.grid[i][j].show()
             }
         }
 
@@ -84,7 +80,7 @@ class Grid{
 
         for(let i = 0; i < this.openSet; i++){
             this.openSet[i].show('green')
-        } 
+        }
     }
 }
 
@@ -100,8 +96,8 @@ class Cell{
     }
 
     show(col){
-        ctx.fillStyle = col
-        ctx.fillRect(this.x * this.width, this.y * this.height, this.width, this.height)
+        ctx.strokeStyle = col
+        ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height)
     }
 }
 
