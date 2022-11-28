@@ -5,6 +5,8 @@ const ctx = canvas.getContext('2d')
 let CANVAS_WIDTH = canvas.width
 let CANVAS_HEIGHT = canvas.height 
 
+let done = false
+
 //game class som håller kolla på allt som händer
 class Game{
     constructor(){
@@ -23,11 +25,11 @@ class Game{
 //class för att skapa och rita ut en grid av valfri storlek
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 5
-        this.rows = 5
+        this.cols = 50
+        this.rows = 50
         this.grid = new Array(this.cols)
         this.openSet = []
-        this.closedSet = []
+        this.closedSet = [] 
         this.start = start
         this.end = end
         this.cellWidth = cWidth / this.cols
@@ -52,49 +54,44 @@ class Grid{
                 this.grid[i][j].addNeighbors(this.grid)
             }
         }
-    }
-
-    update(){
-        //swith som gör om 1 och 0 till väden i 2d arreyen för enklare implementering av funktionen
         
+        //swith som gör om 1 och 0 till väden i 2d arreyen för enklare implementering av funktionen
         switch(this.start){
             case 1:
                 this.start = this.grid[0][0]
                 break
 
             default:
-                //console.log('err start');
+                console.log('err start');
                 break
         }
 
         switch(this.end) {
             case 1:
-                this.end = this.grid[this.cols - 1][this.rows - 1]
+                this.end = this.grid[this.cols - 25][this.rows - 25]
                 break 
 
             default:
-                //console.log('err end');
+                console.log('err end');
                 break
         }
 
         //första cellen läggs till i listan över celler som vilideras. Efterssom det till en början bara finns den så måste den valideras först
-        console.log('start', this.start)
-      
-        console.log('closed', this.closedSet)
-        console.log('push', this.openSet.push(this.start))
-        console.log('open', this.openSet)
+        this.openSet.push(this.start)
+        
         //loopar igen och ger grannar till alla celler och ritar även ut allt på canvasen för att man ska kunna se hur aloritmen jobbar
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
                 this.grid[i][j].show()
             }
         }
-  
+    }
+
+    update(){
         // end cellen altså målet för algoritmen blir blå. Detta är för att förenkla visualisering av algoritmmens arbete
         this.end.show('blue')
 
         //Vad som ska hända om det finns data i openSet, vilket det gör tills algoritmen är klar
-        
         if(this.openSet.length > 0){
             //skapar variabel för den bästa cellen
             this.winner = 0
@@ -123,6 +120,7 @@ class Grid{
                 }
 
                 console.log("Done!!");
+                done = true
             }
 
             //kör min funktion för att ta bort den nuvarande cellen från openSet efter att den har blivit validerad
@@ -222,9 +220,12 @@ class Cell{
 //skapar en grid och ritar ut den
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
-grid.update()
+
 
 function loop(){
+    if(!done){
+       grid.update() 
+    }
     
     requestAnimationFrame(loop)
 }
@@ -253,4 +254,3 @@ function heuristic(a, b){
     let d = dist(a.x, a.y, b.x, b.y)
     return d
 }
-
