@@ -7,26 +7,11 @@ let CANVAS_HEIGHT = canvas.height
 
 let done = false
 
-//game class som håller kolla på allt som händer
-class Game{
-    constructor(){
-
-    }
-
-    update(){ 
-
-    }
-
-    draw(){
-
-    }
-}
-
 //class för att skapa och rita ut en grid av valfri storlek
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 50
-        this.rows = 50
+        this.cols = 1000
+        this.rows = 1000
         this.grid = new Array(this.cols)
         this.openSet = []
         this.closedSet = [] 
@@ -68,7 +53,7 @@ class Grid{
 
         switch(this.end) {
             case 1:
-                this.end = this.grid[this.cols - 25][this.rows - 25]
+                this.end = this.grid[this.cols - 1][this.rows - 1]
                 break 
 
             default:
@@ -82,9 +67,14 @@ class Grid{
         //loopar igen och ger grannar till alla celler och ritar även ut allt på canvasen för att man ska kunna se hur aloritmen jobbar
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
+                this.grid[i][j].wallCheck()
                 this.grid[i][j].show()
             }
         }
+
+        this.start.wall = false
+        this.end.wall = false
+        console.log('A*')
     }
 
     update(){
@@ -119,7 +109,7 @@ class Grid{
                     this.temp = this.temp.previous
                 }
 
-                console.log("Done!!");
+                console.log("Done!!")
                 done = true
             }
 
@@ -127,10 +117,10 @@ class Grid{
             removeFromArrey(this.openSet, this.current)
 
             //lägegr till den validerade cellen i closedSet efterssom den inte behövs mer
-            //ta bort if sats när det funkar, ska inte kunna chacka nuvarande igen så den ska inte behövas
-            if(!this.closedSet.includes(this.current)){
-               this.closedSet.push(this.current) 
-            }
+            this.closedSet.push(this.current) 
+        }else{
+            console.log('no solution!')
+            done = true
         }  
 
         //variabel för att hålla nuvarande cells grannar
@@ -139,22 +129,27 @@ class Grid{
         for(let i = 0; i < this.neighbors.length; i++){
             this.neighbor = this.neighbors[i]
 
-            if(!this.closedSet.includes(this.neighbor)){
+            if(!this.closedSet.includes(this.neighbor) && !this.neighbor.wall){
                 this.tempG = this.current.g + 1
+
+                this.newPath = false
 
                 if(this.openSet.includes(this.neighbor)){
                     if(this.tempG < this.neighbor.g){
-                    this.neighbor.g = this.tempG
+                        this.neighbor.g = this.tempG
+                        this.newPath = true
                     }
                 }else{
                     this.neighbor.g = this.tempG
+                    this.newPath = true
                     this.openSet.push(this.neighbor)
-                    console.log('granne');
                 } 
                 
-                this.neighbor.h = heuristic(this.neighbor, this.end)
-                this.neighbor.f = this.neighbor.g + this.neighbor.h
-                this.neighbor.previous = this.current
+                if(this.newPath){
+                    this.neighbor.h = heuristic(this.neighbor, this.end)
+                    this.neighbor.f = this.neighbor.g + this.neighbor.h
+                    this.neighbor.previous = this.current
+                }
             }
         }
 
@@ -184,23 +179,38 @@ class Cell{
         this.f = 0
         this.g = 0
         this.h = 0
+        this.col = 'white'
         this.neighbors = []
         this.rows = rows
         this.cols = cols
         this.previous = undefined
+        this.wall = false
     }
-
+    //gör random celler till väggar
+    wallCheck(){
+            if(Math.random()*1 < .3){
+                this.wall = true
+                this.col = 'black'
+            }
+        }
     //design på celler, col är vilken fyllnadsfärg som ska användas och det beror på vilken lista cellen ligger i
-    show(col = 'white'){
-        ctx.fillStyle = col
+    show(col){
+        if(col){
+            this.col = col
+        }
+
+        ctx.fillStyle = this.col
         ctx.fillRect(this.x * this.width, this.y * this.height, this.width, this.height)
         
         ctx.strokeStyle = 'black' 
         ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height) 
     }
 
+    
+
     //tar reda på vilka celler som är grannar till den nuvarande cellen och lägger in det i datan för cellen
     addNeighbors(grid){
+        /*raka*/
         if(this.x < this.cols - 1){
            this.neighbors.push(grid[this.x + 1][ this.y]) 
         }
@@ -213,6 +223,21 @@ class Cell{
         if(this.y > 0){
             this.neighbors.push(grid[this.x][this.y - 1])
         }
+
+        /*diagonala*/
+        if(this.x > 0 && this.y > 0){
+            this.neighbors.push(grid[this.x - 1][this.y - 1])
+        }
+        if(this.x < this.cols - 1 && this.y < this.rows - 1){
+            this.neighbors.push(grid[this.x + 1][this.y + 1])
+        }
+        if(this.x > 0 && this.y < this.rows - 1){
+            this.neighbors.push(grid[this.x - 1][this.y + 1])
+        }
+        if(this.x < this.cols - 1 && this.y > this.rows - 1){
+            this.neighbors.push(grid[this.x + 1][this.y + 1])
+        }
+    
     }
 }
 
