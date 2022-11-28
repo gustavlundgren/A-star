@@ -10,8 +10,8 @@ let done = false
 //class för att skapa och rita ut en grid av valfri storlek
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 1000
-        this.rows = 1000
+        this.cols = 150
+        this.rows = 150
         this.grid = new Array(this.cols)
         this.openSet = []
         this.closedSet = [] 
