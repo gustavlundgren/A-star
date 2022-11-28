@@ -23,8 +23,8 @@ class Game{
 //class för att skapa och rita ut en grid av valfri storlek
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 25
-        this.rows = 25
+        this.cols = 5
+        this.rows = 5
         this.grid = new Array(this.cols)
         this.openSet = []
         this.closedSet = []
@@ -79,17 +79,7 @@ class Grid{
                 this.grid[i][j].addNeighbors(this.grid)
             }
         }
-
-        //visualisering
-        //gör så att alla färdigvaliderade celler blir röda och de som hålelr på att bli validerade blir gröna
-        for(let i = 0; i < this.closedSet.length; i++){
-            this.closedSet[i].show('red')
-        }
-
-        for(let i = 0; i < this.openSet.length; i++){
-            this.openSet[i].show('green')
-        }   
-        
+  
         // end cellen altså målet för algoritmen blir blå. Detta är för att förenkla visualisering av algoritmmens arbete
         this.end.show('blue')
 
@@ -109,7 +99,7 @@ class Grid{
             this.current = this.openSet[this.winner]
 
             //om den nuvarande cellen är den cellen som algoritmen hade som mål att nå så är algoritmen klar och kommer logga "Done!!"
-            if(this.openSet[winner] === this.end){
+            if(this.openSet[this.winner] === this.end){
                 console.log("Done!!");
             }
 
@@ -118,8 +108,41 @@ class Grid{
 
             //lägegr till den validerade cellen i closedSet efterssom den inte behövs mer
             this.closedSet.push(this.current)
-
         }else{}  
+
+        //variabel för att hålla nuvarande cells grannar
+        this.neighbors = this.current.neighbors
+
+        for(let i = 0; i < this.neighbors.length; i++){
+            this.neighbor = this.neighbors[i]
+
+            if(!this.closedSet.includes(this.neighbor)){
+                this.tempG = this.current.g + 1
+
+                if(this.openSet.includes(this.neighbor)){
+                    if(this.tempG < this.neighbor.g){
+                    this.neighbor.g = this.tempG
+                    }
+                }else{
+                    this.neighbor.g = this.tempG
+                    this.openSet.push(this.neighbor)
+                } 
+                
+                this.neighbor.h = heuristic(this.neighbor, this.end)
+            }
+        }
+
+        //visualisering
+        //gör så att alla färdigvaliderade celler blir röda och de som hålelr på att bli validerade blir gröna
+        for(let i = 0; i < this.closedSet.length; i++){
+            this.closedSet[i].show('red')
+        }
+
+        for(let i = 0; i < this.openSet.length; i++){
+            this.openSet[i].show('green')
+        } 
+
+        console.log(this.grid)
     }
 }
 
@@ -150,16 +173,16 @@ class Cell{
     //tar reda på vilka celler som är grannar till den nuvarande cellen och lägger in det i datan för cellen
     addNeighbors(grid){
         if(this.x < this.cols - 1){
-           this.neighbors.push(grid[this.x + 1, this.y]) 
+           this.neighbors.push(grid[this.x + 1][ this.y]) 
         }
         if(this.x > 0){
-           this.neighbors.push(grid[this.x - 1, this.y]) 
+           this.neighbors.push(grid[this.x - 1][ this.y]) 
         }
         if(this.y < this.rows - 1){
-            this.neighbors.push(grid[this.x, this.y + 1])
+            this.neighbors.push(grid[this.x][this.y + 1])
         }
         if(this.y > 0){
-            this.neighbors.push(grid[this.x, this.y - 1])
+            this.neighbors.push(grid[this.x][this.y - 1])
         }
     }
 }
@@ -168,10 +191,11 @@ class Cell{
 //skapar en grid och ritar ut den
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
+grid.update()
 
 //loopad funktion 
 function main(){
-    grid.update()
+    
     requestAnimationFrame(main)
 }
 
@@ -185,4 +209,14 @@ function removeFromArrey(arr, elt){
             arr.splice(i, 1)
         }
     }
+}
+
+function heuristic(a, b){
+    let d = dist(a.x, a.y, b.x, b.y)
+    return d
+}
+
+function dist(x1, y1, x2, y2){
+    let d
+    return d
 }
