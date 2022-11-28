@@ -1,15 +1,17 @@
+//skapa canvas 
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
 let CANVAS_WIDTH = canvas.width
 let CANVAS_HEIGHT = canvas.height 
 
+//game class som håller kolla på allt som händer
 class Game{
     constructor(){
 
     }
 
-    update(){
+    update(){ 
 
     }
 
@@ -18,10 +20,11 @@ class Game{
     }
 }
 
+//class för att skapa och rita ut en grid av valfri storlek
 class Grid{
     constructor(start, end, cWidth, cHeight){
-        this.cols = 20
-        this.rows = 20
+        this.cols = 25
+        this.rows = 25
         this.grid = new Array(this.cols)
         this.openSet = []
         this.closedSet = []
@@ -31,6 +34,7 @@ class Grid{
         this.cellHeight = cHeight / this.rows
     }
 
+    //skapar en grid i datorn minne med värden för alla celler och skapar en cell på varje position
     drawGrid(){
         for(let i = 0; i < this.cols; i++){
             this.grid[i] = new Array(this.rows)
@@ -38,13 +42,13 @@ class Grid{
 
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
-                this.grid[i][j] = new Cell(i, j, this.cellWidth, this.cellHeight)
+                this.grid[i][j] = new Cell(i, j, this.cellWidth, this.cellHeight, this.rows, this.cols)
             }
         }
     }
 
     update(){
-
+        //swith som gör om 1 och 0 till väden i 2d arreyen för enklare implementering av funktionen
         switch(this.start){
             case 1:
                 this.start = this.grid[0][0]
@@ -65,27 +69,63 @@ class Grid{
                 break
         }
 
+        //första cellen läggs till i listan över celler som vilideras. Efterssom det till en början bara finns den så måste den valideras först
         this.openSet.push(this.start)
 
-
+        //loopar igen och ger grannar till alla celler och ritar även ut allt på canvasen för att man ska kunna se hur aloritmen jobbar
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
-                this.grid[i][j].show('black', true)
+                this.grid[i][j].show()
+                this.grid[i][j].addNeighbors(this.grid)
             }
         }
 
+        //visualisering
+        //gör så att alla färdigvaliderade celler blir röda och de som hålelr på att bli validerade blir gröna
         for(let i = 0; i < this.closedSet.length; i++){
-            this.closedSet[i].show('red', true)
+            this.closedSet[i].show('red')
         }
 
-        for(let i = 0; i < this.openSet; i++){
-            this.openSet[i].show('green', true)
-        }
+        for(let i = 0; i < this.openSet.length; i++){
+            this.openSet[i].show('green')
+        }   
+        
+        // end cellen altså målet för algoritmen blir blå. Detta är för att förenkla visualisering av algoritmmens arbete
+        this.end.show('blue')
+
+        //Vad som ska hända om det finns data i openSet, vilket det gör tills algoritmen är klar
+        if(this.openSet.length > 0){
+            //skapar variabel för den bästa cellen
+            this.winner = 0
+
+            //kollar vilken cell i openSet som har det bästa f värdet
+            for(let i = 0; i < this.openSet.length; i++){
+                if(this.openSet[i].f < this.openSet[this.winner].f){
+                    this.winner = i
+                }
+            }
+
+            //sätter den nuvarande cellen för att validera till den cellen som har bäst f värde
+            this.current = this.openSet[this.winner]
+
+            //om den nuvarande cellen är den cellen som algoritmen hade som mål att nå så är algoritmen klar och kommer logga "Done!!"
+            if(this.openSet[winner] === this.end){
+                console.log("Done!!");
+            }
+
+            //kör min funktion för att ta bort den nuvarande cellen från openSet efter att den har blivit validerad
+            removeFromArrey(this.openSet, this.current)
+
+            //lägegr till den validerade cellen i closedSet efterssom den inte behövs mer
+            this.closedSet.push(this.current)
+
+        }else{}  
     }
 }
 
+//en klass för hur en cell i griden ska se ut och bete sig
 class Cell{
-    constructor(i, j, width, height){
+    constructor(i, j, width, height, rows, cols){
         this.x = i
         this.y = j
         this.width = width
@@ -93,29 +133,56 @@ class Cell{
         this.f = 0
         this.g = 0
         this.h = 0
+        this.neighbors = []
+        this.rows = rows
+        this.cols = cols
     }
 
-    show(col, bool){
+    //design på celler, col är vilken fyllnadsfärg som ska användas och det beror på vilken lista cellen ligger i
+    show(col = 'white'){
+        ctx.fillStyle = col
+        ctx.fillRect(this.x * this.width, this.y * this.height, this.width, this.height)
         
-        this.bool;
+        ctx.strokeStyle = 'black' 
+        ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height) 
+    }
 
-        if(this.bool){
-            ctx.fillStyle = col
-            ctx.fillRect(this.x * this.width, this.y * this.height, this.width, this.height)
-        }else{
-            ctx.strokeStyle = col
-            ctx.strokeRect(this.x * this.width, this.y * this.height, this.width, this.height) 
+    //tar reda på vilka celler som är grannar till den nuvarande cellen och lägger in det i datan för cellen
+    addNeighbors(grid){
+        if(this.x < this.cols - 1){
+           this.neighbors.push(grid[this.x + 1, this.y]) 
         }
-   }
+        if(this.x > 0){
+           this.neighbors.push(grid[this.x - 1, this.y]) 
+        }
+        if(this.y < this.rows - 1){
+            this.neighbors.push(grid[this.x, this.y + 1])
+        }
+        if(this.y > 0){
+            this.neighbors.push(grid[this.x, this.y - 1])
+        }
+    }
 }
 
+
+//skapar en grid och ritar ut den
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
 
-
+//loopad funktion 
 function main(){
     grid.update()
     requestAnimationFrame(main)
 }
 
 main()
+
+
+//funktion som tar emot en lista och ett element för att sendan ta bort det elementet från listan. Den loopar igenom baklänges för att det inte ska bli problem med skipping när index ändras
+function removeFromArrey(arr, elt){
+    for(let i = arr.length - 1; i >= 0; i--){
+        if(arr[i] == elt){
+            arr.splice(i, 1)
+        }
+    }
+}
