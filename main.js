@@ -56,6 +56,7 @@ class Grid{
 
     update(){
         //swith som gör om 1 och 0 till väden i 2d arreyen för enklare implementering av funktionen
+        
         switch(this.start){
             case 1:
                 this.start = this.grid[0][0]
@@ -77,13 +78,15 @@ class Grid{
         }
 
         //första cellen läggs till i listan över celler som vilideras. Efterssom det till en början bara finns den så måste den valideras först
-        this.openSet.push(this.start)
-
+        console.log('start', this.start)
+      
+        console.log('closed', this.closedSet)
+        console.log('push', this.openSet.push(this.start))
+        console.log('open', this.openSet)
         //loopar igen och ger grannar till alla celler och ritar även ut allt på canvasen för att man ska kunna se hur aloritmen jobbar
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
                 this.grid[i][j].show()
-                this.grid[i][j].addNeighbors(this.grid)
             }
         }
   
@@ -91,6 +94,7 @@ class Grid{
         this.end.show('blue')
 
         //Vad som ska hända om det finns data i openSet, vilket det gör tills algoritmen är klar
+        
         if(this.openSet.length > 0){
             //skapar variabel för den bästa cellen
             this.winner = 0
@@ -125,8 +129,11 @@ class Grid{
             removeFromArrey(this.openSet, this.current)
 
             //lägegr till den validerade cellen i closedSet efterssom den inte behövs mer
-            this.closedSet.push(this.current)
-        }else{}  
+            //ta bort if sats när det funkar, ska inte kunna chacka nuvarande igen så den ska inte behövas
+            if(!this.closedSet.includes(this.current)){
+               this.closedSet.push(this.current) 
+            }
+        }  
 
         //variabel för att hålla nuvarande cells grannar
         this.neighbors = this.current.neighbors
@@ -144,6 +151,7 @@ class Grid{
                 }else{
                     this.neighbor.g = this.tempG
                     this.openSet.push(this.neighbor)
+                    console.log('granne');
                 } 
                 
                 this.neighbor.h = heuristic(this.neighbor, this.end)
@@ -165,8 +173,6 @@ class Grid{
         for(let i = 0; i < this.path.length; i++){
             this.path[i].show('blue')
         }
-
-        console.log(this.grid)
     }
 }
 
@@ -216,10 +222,10 @@ class Cell{
 //skapar en grid och ritar ut den
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
-
+grid.update()
 
 function loop(){
-    grid.update()
+    
     requestAnimationFrame(loop)
 }
 
@@ -234,11 +240,6 @@ function removeFromArrey(arr, elt){
     }
 }
 
-function heuristic(a, b){
-    let d = dist(a.x, a.y, b.x, b.y)
-    return d
-}
-
 function dist(x1, y1, x2, y2){
     let dx = Math.abs(x1 - x2)
     let dy = Math.abs(y1 - y2)
@@ -247,3 +248,9 @@ function dist(x1, y1, x2, y2){
 
     return d
 }
+
+function heuristic(a, b){
+    let d = dist(a.x, a.y, b.x, b.y)
+    return d
+}
+
