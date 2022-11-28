@@ -32,6 +32,7 @@ class Grid{
         this.end = end
         this.cellWidth = cWidth / this.cols
         this.cellHeight = cHeight / this.rows
+        this.path = []
     }
 
     //skapar en grid i datorn minne med värden för alla celler och skapar en cell på varje position
@@ -43,6 +44,12 @@ class Grid{
         for(let i = 0; i < this.cols; i++){
             for(let j = 0; j < this.rows; j++){
                 this.grid[i][j] = new Cell(i, j, this.cellWidth, this.cellHeight, this.rows, this.cols)
+            }
+        }
+
+        for(let i = 0; i < this.cols; i++){
+            for(let j = 0; j < this.rows; j++){
+                this.grid[i][j].addNeighbors(this.grid)
             }
         }
     }
@@ -99,7 +106,18 @@ class Grid{
             this.current = this.openSet[this.winner]
 
             //om den nuvarande cellen är den cellen som algoritmen hade som mål att nå så är algoritmen klar och kommer logga "Done!!"
-            if(this.openSet[this.winner] === this.end){
+            if(this.current === this.end){
+
+                //hitta vägen 
+                this.temp = this.current
+
+                this.path.push(this.temp)
+
+                while(this.temp.previous){
+                    this.path.push(this.temp.previous)
+                    this.temp = this.temp.previous
+                }
+
                 console.log("Done!!");
             }
 
@@ -129,6 +147,8 @@ class Grid{
                 } 
                 
                 this.neighbor.h = heuristic(this.neighbor, this.end)
+                this.neighbor.f = this.neighbor.g + this.neighbor.h
+                this.neighbor.previous = this.current
             }
         }
 
@@ -141,6 +161,10 @@ class Grid{
         for(let i = 0; i < this.openSet.length; i++){
             this.openSet[i].show('green')
         } 
+
+        for(let i = 0; i < this.path.length; i++){
+            this.path[i].show('blue')
+        }
 
         console.log(this.grid)
     }
@@ -159,6 +183,7 @@ class Cell{
         this.neighbors = []
         this.rows = rows
         this.cols = cols
+        this.previous = undefined
     }
 
     //design på celler, col är vilken fyllnadsfärg som ska användas och det beror på vilken lista cellen ligger i
@@ -191,16 +216,14 @@ class Cell{
 //skapar en grid och ritar ut den
 const grid = new Grid(1, 1, CANVAS_WIDTH, CANVAS_HEIGHT)
 grid.drawGrid()
-grid.update()
 
-//loopad funktion 
-function main(){
-    
-    requestAnimationFrame(main)
+
+function loop(){
+    grid.update()
+    requestAnimationFrame(loop)
 }
 
-main()
-
+loop()
 
 //funktion som tar emot en lista och ett element för att sendan ta bort det elementet från listan. Den loopar igenom baklänges för att det inte ska bli problem med skipping när index ändras
 function removeFromArrey(arr, elt){
@@ -217,6 +240,10 @@ function heuristic(a, b){
 }
 
 function dist(x1, y1, x2, y2){
-    let d
+    let dx = Math.abs(x1 - x2)
+    let dy = Math.abs(y1 - y2)
+
+    let d = Math.sqrt((dx*dx)+(dy*dy))
+
     return d
 }
